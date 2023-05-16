@@ -15,10 +15,16 @@ export default function Profile({ user }) {
 }
 
 export async function getServerSideProps({ req, res }) {
-  const supabaseServerClient = createServerSupabaseClient<Database>({
-    req,
-    res,
-  });
+  const supabaseServerClient = createServerSupabaseClient<Database>(
+    {
+      req,
+      res,
+    },
+    {
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    }
+  );
   const {
     data: { user },
   } = await supabaseServerClient.auth.getUser();
