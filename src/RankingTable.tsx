@@ -106,7 +106,7 @@ export const RankingTable = () => {
                 <TableCell sx={{ p: 0 }}></TableCell>
                 <TableCell width={150}>Name</TableCell>
                 <TableCell>Alkohol</TableCell>
-                <TableCell>Aktueller Pegel</TableCell>
+                <TableCell>Aktueller&nbsp;Pegel</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
