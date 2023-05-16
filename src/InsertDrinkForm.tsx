@@ -90,7 +90,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
                 <Box display="flex" flexWrap="wrap" mx={-1} mb={-1}>
                   {userDrinks.map((drink, index) => (
                     <Box key={index} px={1} mb={1}>
-                      <Button variant="outlined" onClick={() => handleSubmit(drink)}>
+                      <Button variant="outlined" onClick={() => handleSubmit(drink as unknown as InsertDrinkValues)}>
                         {drink.amount_ml}ml {DrinkMapping[drink.type] ?? drink.type}, {drink.percentage}%
                       </Button>
                     </Box>

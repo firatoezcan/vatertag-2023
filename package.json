@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "tslint": "tsc --noEmit --incremental",
     "start": "next start"
   },
   "dependencies": {
