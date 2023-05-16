@@ -13,6 +13,7 @@ import { groupBy } from "lodash";
 import { IconChevronDown, IconChevronUp } from "@supabase/ui";
 import { MoreVert } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
+import { useUser } from "@supabase/auth-helpers-react";
 
 type Drinks = {
   amount_ml: number;
@@ -50,6 +51,7 @@ export const RankingTable = () => {
   const [visibleDetails, setVisibleDetails] = useState<string | undefined>(undefined);
 
   const queryClient = useQueryClient();
+  const user = useUser();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasClickedDelete, setHasClickedDelete] = useState(false);
@@ -148,7 +150,7 @@ export const RankingTable = () => {
                               <Table sx={{ maxWidth: 444 }}>
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell sx={{ p: 0 }}></TableCell>
+                                    {user.id === userId && <TableCell sx={{ p: 0 }}></TableCell>}
                                     <TableCell>Getränk</TableCell>
                                     <TableCell align="right">Menge</TableCell>
                                     <TableCell align="right">Prozent</TableCell>
@@ -158,16 +160,23 @@ export const RankingTable = () => {
                                 <TableBody>
                                   {userDrinks.map((drink, index) => (
                                     <TableRow key={index} onContextMenu={console.log}>
-                                      <TableCell sx={{ p: 0 }}>
-                                        <IconButton onClick={handleClick} sx={{ p: 0 }}>
-                                          <MoreVert />
-                                        </IconButton>
-                                        <Menu anchorEl={anchorEl} open={open} onClose={handleClose} MenuListProps={{ sx: { p: 0 } }}>
-                                          <Button color="error" size="small" variant="contained" onClick={hasClickedDelete ? handleDeleteDrink(drink.id) : handleDeleteFirstClick}>
-                                            {hasClickedDelete ? "Wirklich löschen?" : "Löschen"}
-                                          </Button>
-                                        </Menu>
-                                      </TableCell>
+                                      {user.id === userId && (
+                                        <TableCell sx={{ p: 0 }}>
+                                          <IconButton onClick={handleClick} sx={{ p: 0 }}>
+                                            <MoreVert />
+                                          </IconButton>
+                                          <Menu anchorEl={anchorEl} open={open} onClose={handleClose} MenuListProps={{ sx: { p: 0 } }}>
+                                            <Button
+                                              color="error"
+                                              size="small"
+                                              variant="contained"
+                                              onClick={hasClickedDelete ? handleDeleteDrink(drink.id) : handleDeleteFirstClick}>
+                                              {hasClickedDelete ? "Wirklich löschen?" : "Löschen"}
+                                            </Button>
+                                          </Menu>
+                                        </TableCell>
+                                      )}
+
                                       <TableCell>{DrinkMapping[drink.type]}</TableCell>
                                       <TableCell align="right">{drink.amount_ml}ml</TableCell>
                                       <TableCell align="right">{drink.percentage}%</TableCell>
