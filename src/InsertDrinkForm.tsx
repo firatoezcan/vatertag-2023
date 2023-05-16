@@ -143,7 +143,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
                   disabled={isLoading}
                 />
                 {amount === "0" && <HookFormTextField label="Menge in Milliliter die du getrunken hast" name="customAmount" type="number" disabled={isLoading} />}
-                <HookFormTextField label="Prozent" name="percentage" type="number" disabled={isLoading} inputProps={{ step: ".1" }} />
+                <HookFormTextField label="Prozent" name="percentage" type="number" disabled={isLoading} inputProps={{ step: ".1", max: "100", min: "1" }} />
                 {error && <pre>{JSON.stringify(error)}</pre>}
               </Stack>
             </Stack>
