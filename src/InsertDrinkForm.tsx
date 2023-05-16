@@ -54,7 +54,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
   const formMethods = useForm<InsertDrinkValues>({
     resolver: zodResolver(InsertDrinkSchema),
     defaultValues: {
-      name: userInfo.name,
+      name: userInfo?.name,
     },
   });
   const queryClient = useQueryClient();
