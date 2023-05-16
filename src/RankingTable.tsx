@@ -26,6 +26,11 @@ const calculateTotalAlcohol = (drinks: Drinks) =>
     return total + alcoholInGrams;
   }, 0);
 
+const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
+  const WIDMARK_CONSTANT_MALE = 0.68;
+
+  return (calculateTotalAlcohol(drinks) / (weight * WIDMARK_CONSTANT_MALE)).toFixed(3);
+};
 export const RankingTable = () => {
   const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
   const { data: users, isLoading: isLoadingUsers } = useSupabaseQuery((supabase) => supabase.from("user").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
@@ -90,6 +95,7 @@ export const RankingTable = () => {
                 <TableCell></TableCell>
                 <TableCell width={150}>Name</TableCell>
                 <TableCell>Alkohol</TableCell>
+                <TableCell>Pegel</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -107,6 +113,7 @@ export const RankingTable = () => {
                         {users.find((u) => u.user_id === userId)?.name ?? "Nicht registriert (geil ey)"}
                       </TableCell>
                       <TableCell>{calculateTotalAlcohol(userDrinks).toFixed(2)}g</TableCell>
+                      <TableCell>{calculcateBloodAlcohol(userDrinks, users.find((u) => u.user_id === userId).weight)}‰</TableCell>
                     </TableRow>
                     <TableRow sx={{ border: 0 }}>
                       <TableCell colSpan={8} sx={{ py: 0 }}>
