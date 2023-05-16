@@ -7,7 +7,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useSupabaseMutation, useSupabaseQuery } from "./useSupabaseQuery";
 import { Box, Button, Card, CardActions, CardContent, Collapse, Divider, IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DrinkMapping, InsertDrinkForm } from "./InsertDrinkForm";
 import { groupBy } from "lodash";
 import { IconChevronDown, IconChevronUp } from "@supabase/ui";
@@ -53,6 +53,7 @@ export const RankingTable = () => {
   const queryClient = useQueryClient();
   const user = useUser();
 
+  const [renderCount, setRenderCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasClickedDelete, setHasClickedDelete] = useState(false);
   const open = Boolean(anchorEl);
@@ -73,10 +74,30 @@ export const RankingTable = () => {
     setAnchorEl(null);
   };
 
+  useEffect(() => {
+    const timeout = setTimeout(() => setRenderCount(renderCount + 1), 200);
+    return () => {
+      clearTimeout(timeout);
+    };
+  });
+
+  const drinksByUser = useMemo(
+    () =>
+      Object.entries(groupBy(drinks, (drink) => drink.user_id)).map(([userId, userDrinks]) => ({
+        userId,
+        drinks: userDrinks,
+        shots: userDrinks.filter((d) => d.type === "shot").length,
+        "330mlBeer": userDrinks.filter((d) => d.type === "beer" && d.amount_ml === 330).length,
+        "500mlBeer": userDrinks.filter((d) => d.type === "beer" && d.amount_ml === 500).length,
+        otherBeer: userDrinks.filter((d) => d.type === "beer" && d.amount_ml !== 330 && d.amount_ml !== 500).length,
+        mixed: userDrinks.filter((d) => d.type === "mixed").length,
+      })),
+    [drinks]
+  );
+
   if (isLoading || isLoadingUsers) return null;
 
   const hasDrinks = drinks.length > 0;
-  const drinksByUser = groupBy(drinks, (drink) => drink.user_id);
 
   return (
     <Stack spacing={3} width="100%" justifyContent="center" alignItems="center">
@@ -113,11 +134,13 @@ export const RankingTable = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {Object.entries(drinksByUser)
+              {drinksByUser
                 .sort(
-                  (a, b) => calculateTotalAlcohol(b[1], users.find((u) => u.user_id === b[0]).weight) - calculateTotalAlcohol(a[1], users.find((u) => u.user_id === a[0]).weight)
+                  (a, b) =>
+                    calculateTotalAlcohol(b.drinks, users.find((u) => u.user_id === b.userId).weight) -
+                    calculateTotalAlcohol(a.drinks, users.find((u) => u.user_id === a.userId).weight)
                 )
-                .map(([userId, userDrinks]) => (
+                .map(({ userId, drinks: userDrinks, ...stats }) => (
                   <>
                     <TableRow key={userId} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                       <TableCell component="th" scope="row" sx={{ p: 0 }}>
@@ -137,13 +160,11 @@ export const RankingTable = () => {
                           <Stack spacing={2}>
                             <Box>
                               <Typography variant="h6">Statistik:</Typography>
-                              <Typography variant="body2">Kurze: {userDrinks.filter((d) => d.type === "shot").length}</Typography>
-                              <Typography variant="body2">0.33l Bier: {userDrinks.filter((d) => d.type === "beer" && d.amount_ml === 330).length}</Typography>
-                              <Typography variant="body2">0.5l Bier: {userDrinks.filter((d) => d.type === "beer" && d.amount_ml === 500).length}</Typography>
-                              <Typography variant="body2">
-                                Anderes Bier: {userDrinks.filter((d) => d.type === "beer" && d.amount_ml !== 330 && d.amount_ml !== 500).length}
-                              </Typography>
-                              <Typography variant="body2">Mischen: {userDrinks.filter((d) => d.type === "mixed").length}</Typography>
+                              <Typography variant="body2">Kurze: {stats.shots}</Typography>
+                              <Typography variant="body2">0.33l Bier: {stats["330mlBeer"]}</Typography>
+                              <Typography variant="body2">0.5l Bier: {stats["500mlBeer"]}</Typography>
+                              <Typography variant="body2">Anderes Bier: {stats.otherBeer}</Typography>
+                              <Typography variant="body2">Mischen: {stats.mixed}</Typography>
                             </Box>
                             <Box>
                               <Typography variant="h6">Auflistung:</Typography>
