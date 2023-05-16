@@ -21,6 +21,7 @@ export const DrinkMapping: Record<DrinkType, string> = {
 };
 
 const InsertDrinkSchema = z.object({
+  name: z.string().min(1, "Ok Mr.IchSagDirMeinenNamenNicht"),
   type: z.enum(drinkTypes, { errorMap: () => ({ message: "Wähl dein scheiß Getränk aus du Honk" }) }),
   amount_ml: z.string().min(1, "Nichts trinken ist gut aber hilft dir hier nichts"),
   percentage: z.string().min(1, "Wasser"),
@@ -46,29 +47,51 @@ const useUserDrinks = () => {
 
 export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
   const { onClose } = props;
+
+  const user = useUser();
+  const { data: users } = useSupabaseQuery((s) => s.from("user").select("*"));
+  const userInfo = users.find((u) => u.user_id === user.id);
   const formMethods = useForm<InsertDrinkValues>({
     resolver: zodResolver(InsertDrinkSchema),
+    defaultValues: {
+      name: userInfo.name,
+    },
   });
-  const user = useUser();
   const queryClient = useQueryClient();
   const userDrinks = useUserDrinks();
 
   const { mutateAsync, isLoading, error } = useSupabaseMutation({});
 
-  const handleSubmit = (values: InsertDrinkValues) => {
-    console.log(values);
+  const handleSubmit = async (values: InsertDrinkValues) => {
     if (isLoading) return;
-    mutateAsync((supabase) =>
+    if (userInfo) {
+      await mutateAsync((s) =>
+        s
+          .from("user")
+          .update({
+            name: values.name,
+          })
+          .eq("user_id", user.id)
+      );
+    } else {
+      await mutateAsync((s) =>
+        s.from("user").insert({
+          name: values.name,
+          user_id: user.id,
+        })
+      );
+    }
+
+    await mutateAsync((supabase) =>
       supabase.from("drink").insert({
         amount_ml: parseInt(values.customAmount ?? values.amount_ml),
         percentage: parseInt(values.percentage),
         type: values.type,
         user_id: user.id,
       })
-    ).then(() => {
-      queryClient.invalidateQueries(["drink"]);
-      onClose();
-    });
+    );
+    queryClient.invalidateQueries(["drink", "user"]);
+    onClose();
   };
 
   const amount = formMethods.watch("amount_ml");
@@ -83,24 +106,27 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
           <Divider />
           <CardContent>
             <Stack spacing={2} width="100%">
-              <Box>
-                <Typography variant="body1" fontWeight="500">
-                  Schnellauswahl
-                </Typography>
-                <Box display="flex" flexWrap="wrap" mx={-1} mb={-1}>
-                  {userDrinks.map((drink, index) => (
-                    <Box key={index} px={1} mb={1}>
-                      <Button variant="outlined" onClick={() => handleSubmit(drink as unknown as InsertDrinkValues)}>
-                        {drink.amount_ml}ml {DrinkMapping[drink.type] ?? drink.type}, {drink.percentage}%
-                      </Button>
-                    </Box>
-                  ))}
+              {userDrinks.length > 0 && (
+                <Box>
+                  <Typography variant="body1" fontWeight="500">
+                    Schnellauswahl
+                  </Typography>
+                  <Box display="flex" flexWrap="wrap" mx={-1} mb={-1}>
+                    {userDrinks.map((drink, index) => (
+                      <Box key={index} px={1} mb={1}>
+                        <Button variant="outlined" onClick={() => handleSubmit(drink as unknown as InsertDrinkValues)}>
+                          {drink.amount_ml}ml {DrinkMapping[drink.type] ?? drink.type}, {drink.percentage}%
+                        </Button>
+                      </Box>
+                    ))}
+                  </Box>
                 </Box>
-              </Box>
-              <Box>
+              )}
+              <Stack spacing={1}>
                 <Typography variant="body1" fontWeight="500">
                   Neues Getränk
                 </Typography>
+                <HookFormTextField label="Dein Name" name="name" />
                 <HookFormSelect label="Getränk" options={drinkTypes.map((drinkType) => ({ label: DrinkMapping[drinkType], value: drinkType }))} name="type" disabled={isLoading} />
                 <HookFormSelect
                   label="Menge"
@@ -119,7 +145,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
                 {amount === "0" && <HookFormTextField label="Menge in Milliliter die du getrunken hast" name="customAmount" type="number" disabled={isLoading} />}
                 <HookFormTextField label="Prozent" name="percentage" type="number" disabled={isLoading} inputProps={{ step: ".1" }} />
                 {error && <pre>{JSON.stringify(error)}</pre>}
-              </Box>
+              </Stack>
             </Stack>
           </CardContent>
           <CardActions>

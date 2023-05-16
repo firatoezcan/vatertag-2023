@@ -14,29 +14,13 @@ import { IconChevronDown, IconChevronUp } from "@supabase/ui";
 import { MoreVert } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
 
-function calculateTotalAlcohol(drinks) {
-  let totalAlcohol = 0;
-
-  for (let i = 0; i < drinks.length; i++) {
-    const drink = drinks[i];
-    const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
-    const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
-    totalAlcohol += alcoholInGrams;
-  }
-
-  return totalAlcohol.toFixed(2);
-}
-
 export const RankingTable = () => {
   const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
   const { data: users, isLoading: isLoadingUsers } = useSupabaseQuery((supabase) => supabase.from("user").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
   const [showInsertDrinkForm, setShowInsertDrinkForm] = useState(false);
   const [visibleDetails, setVisibleDetails] = useState<string | undefined>(undefined);
-  const queryClient = useQueryClient();
 
-  if (isLoading || isLoadingUsers) return null;
-  const hasDrinks = drinks.length > 0;
-  const drinksByUser = groupBy(drinks, (drink) => drink.user_id);
+  const queryClient = useQueryClient();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hasClickedDelete, setHasClickedDelete] = useState(false);
@@ -57,6 +41,11 @@ export const RankingTable = () => {
     setHasClickedDelete(false);
     setAnchorEl(null);
   };
+
+  if (isLoading || isLoadingUsers) return null;
+
+  const hasDrinks = drinks.length > 0;
+  const drinksByUser = groupBy(drinks, (drink) => drink.user_id);
 
   return (
     <Stack spacing={3} width="100%" justifyContent="center" alignItems="center">
