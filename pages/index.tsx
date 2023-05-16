@@ -5,34 +5,32 @@ import { Box, Container } from "@mui/material";
 import { RankingTable } from "../src/RankingTable";
 import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { Database } from "../src/types/supabase";
+import { useSession, useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
-export default function Profile({ user }) {
+export default function Profile() {
+  const client = useSupabaseClient();
+  const router = useRouter();
+  const [hasCheckedUser, setHasCheckedUser] = useState(false);
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await client.auth.getUser();
+      if (!user) {
+        router.push("/login");
+      } else {
+        setHasCheckedUser(true);
+      }
+    };
+    checkUser();
+  }, [client]);
+
+  if (!hasCheckedUser) return null;
   return (
     <Container maxWidth="xs" sx={{ py: 8, display: "flex", justifyContent: "center" }}>
       <RankingTable />
     </Container>
   );
-}
-
-export async function getServerSideProps({ req, res }) {
-  const supabaseServerClient = createServerSupabaseClient<Database>(
-    {
-      req,
-      res,
-    },
-    {
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    }
-  );
-  const {
-    data: { user },
-  } = await supabaseServerClient.auth.getUser();
-  if (!user) {
-    // If no user, redirect to index.
-    return { props: {}, redirect: { destination: "/login", permanent: false } };
-  }
-
-  // If there is a user, return it.
-  return { props: { user } };
 }

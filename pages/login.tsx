@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 const Index = () => {
   const supabaseClient = useSupabaseClient();
   const user = useUser();
-  const [data, setData] = useState();
   const router = useRouter();
   if (!user)
     return (
