@@ -22,6 +22,7 @@ export const DrinkMapping: Record<DrinkType, string> = {
 
 const InsertDrinkSchema = z.object({
   name: z.string().min(1, "Ok Mr.IchSagDirMeinenNamenNicht"),
+  weight: z.string().min(2, "??????????????"),
   type: z.enum(drinkTypes, { errorMap: () => ({ message: "Wähl dein scheiß Getränk aus du Honk" }) }),
   amount_ml: z.string().min(1, "Nichts trinken ist gut aber hilft dir hier nichts"),
   percentage: z.string().min(1, "Wasser"),
@@ -53,9 +54,12 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
   const userInfo = users.find((u) => u.user_id === user.id);
   const formMethods = useForm<InsertDrinkValues>({
     resolver: zodResolver(InsertDrinkSchema),
-    defaultValues: {
-      name: userInfo?.name,
-    },
+    defaultValues: userInfo
+      ? {
+          name: userInfo.name,
+          weight: String(userInfo.weight),
+        }
+      : {},
   });
   const queryClient = useQueryClient();
   const userDrinks = useUserDrinks();
@@ -70,6 +74,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
           .from("user")
           .update({
             name: values.name,
+            weight: parseInt(values.weight),
           })
           .eq("user_id", user.id)
       );
@@ -78,6 +83,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
         s.from("user").insert({
           name: values.name,
           user_id: user.id,
+          weight: parseInt(values.weight),
         })
       );
     }
@@ -127,6 +133,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
                   Neues Getränk
                 </Typography>
                 <HookFormTextField label="Dein Name" name="name" />
+                <HookFormTextField label="Dein Gewicht in kg" name="weight" />
                 <HookFormSelect label="Getränk" options={drinkTypes.map((drinkType) => ({ label: DrinkMapping[drinkType], value: drinkType }))} name="type" disabled={isLoading} />
                 <HookFormSelect
                   label="Menge"
@@ -144,7 +151,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
                 />
                 {amount === "0" && <HookFormTextField label="Menge in Milliliter die du getrunken hast" name="customAmount" type="number" disabled={isLoading} />}
                 <HookFormTextField label="Prozent" name="percentage" type="number" disabled={isLoading} inputProps={{ step: ".1", max: "100", min: "1" }} />
-                {error && <pre>{JSON.stringify(error)}</pre>}
+                {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
               </Stack>
             </Stack>
           </CardContent>

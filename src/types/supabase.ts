@@ -35,18 +35,21 @@ export interface Database {
           id: number;
           name: string;
           user_id: string;
+          weight: number;
         };
         Insert: {
           created_at?: string | null;
           id?: number;
           name: string;
           user_id: string;
+          weight: number;
         };
         Update: {
           created_at?: string | null;
           id?: number;
           name?: string;
           user_id?: string;
+          weight?: number;
         };
       };
     };
