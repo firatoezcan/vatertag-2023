@@ -22,16 +22,17 @@ type Drinks = {
 
 const calculateTotalAlcohol = (drinks: Drinks, weight: number) =>
   drinks.reduce((total, drink) => {
+    const metabolizationRate = 7; // grams per hour
     const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
     const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
     const drinkTimestamp = new Date(drink.created_at).valueOf();
     // Calculate the time difference in hours between the current timestamp and the drink timestamp
     const timeDiffHours = (Date.now() - drinkTimestamp) / (1000 * 60 * 60);
 
-    // Adjust the alcohol amount based on the metabolism rate and time difference
-    const adjustedAlcoholInGrams = alcoholInGrams - 0.015 * weight * timeDiffHours;
+    let metabolizedAlcohol = timeDiffHours * metabolizationRate;
+    let remainingAlcohol = alcoholInGrams - metabolizedAlcohol;
 
-    return total + adjustedAlcoholInGrams;
+    return total + (remainingAlcohol > 0 ? remainingAlcohol : 0);
   }, 0);
 
 const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
