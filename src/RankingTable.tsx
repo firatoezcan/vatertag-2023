@@ -17,20 +17,31 @@ import { useQueryClient } from "@tanstack/react-query";
 type Drinks = {
   amount_ml: number;
   percentage: number;
+  created_at: string;
 }[];
 
-const calculateTotalAlcohol = (drinks: Drinks) =>
+const calculateTotalAlcohol = (drinks: Drinks, weight: number) =>
   drinks.reduce((total, drink) => {
     const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
     const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
-    return total + alcoholInGrams;
+    const drinkTimestamp = new Date(drink.created_at).valueOf();
+    // Calculate the time difference in hours between the current timestamp and the drink timestamp
+    const timeDiffHours = (Date.now() - drinkTimestamp) / (1000 * 60 * 60);
+
+    // Adjust the alcohol amount based on the metabolism rate and time difference
+    const adjustedAlcoholInGrams = alcoholInGrams - 0.015 * weight * timeDiffHours;
+
+    return total + adjustedAlcoholInGrams;
   }, 0);
 
 const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
-  const WIDMARK_CONSTANT_MALE = 0.68;
+  const WIDMARK_CONSTANT_MALE = 0.65;
 
-  return (calculateTotalAlcohol(drinks) / (weight * WIDMARK_CONSTANT_MALE)).toFixed(3);
+  return (calculateTotalAlcohol(drinks, weight) / (weight * WIDMARK_CONSTANT_MALE)).toFixed(3);
 };
+
+const dateFormatter = new Intl.DateTimeFormat("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric", second: "numeric" });
+
 export const RankingTable = () => {
   const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
   const { data: users, isLoading: isLoadingUsers } = useSupabaseQuery((supabase) => supabase.from("user").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
@@ -92,19 +103,21 @@ export const RankingTable = () => {
           <Table sx={{ maxWidth: 444 }}>
             <TableHead>
               <TableRow>
-                <TableCell></TableCell>
+                <TableCell sx={{ p: 0 }}></TableCell>
                 <TableCell width={150}>Name</TableCell>
                 <TableCell>Alkohol</TableCell>
-                <TableCell>Pegel</TableCell>
+                <TableCell>Aktueller Pegel</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {Object.entries(drinksByUser)
-                .sort((a, b) => calculateTotalAlcohol(b[1]) - calculateTotalAlcohol(a[1]))
+                .sort(
+                  (a, b) => calculateTotalAlcohol(b[1], users.find((u) => u.user_id === b[0]).weight) - calculateTotalAlcohol(a[1], users.find((u) => u.user_id === a[0]).weight)
+                )
                 .map(([userId, userDrinks]) => (
                   <>
                     <TableRow key={userId} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                      <TableCell component="th" scope="row">
+                      <TableCell component="th" scope="row" sx={{ p: 0 }}>
                         <IconButton color="primary" onClick={() => setVisibleDetails(visibleDetails === userId ? undefined : userId)}>
                           {visibleDetails ? <IconChevronUp /> : <IconChevronDown />}
                         </IconButton>
@@ -112,7 +125,7 @@ export const RankingTable = () => {
                       <TableCell component="th" scope="row">
                         {users.find((u) => u.user_id === userId)?.name ?? "Nicht registriert (geil ey)"}
                       </TableCell>
-                      <TableCell>{calculateTotalAlcohol(userDrinks).toFixed(2)}g</TableCell>
+                      <TableCell>{calculateTotalAlcohol(userDrinks, users.find((u) => u.user_id === userId).weight).toFixed(2)}g</TableCell>
                       <TableCell>{calculcateBloodAlcohol(userDrinks, users.find((u) => u.user_id === userId).weight)}‰</TableCell>
                     </TableRow>
                     <TableRow sx={{ border: 0 }}>
@@ -134,16 +147,17 @@ export const RankingTable = () => {
                               <Table sx={{ maxWidth: 444 }}>
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell></TableCell>
+                                    <TableCell sx={{ p: 0 }}></TableCell>
                                     <TableCell>Getränk</TableCell>
                                     <TableCell align="right">Menge</TableCell>
                                     <TableCell align="right">Prozent</TableCell>
+                                    <TableCell align="right">Wann?</TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
                                   {userDrinks.map((drink, index) => (
                                     <TableRow key={index} onContextMenu={console.log}>
-                                      <TableCell>
+                                      <TableCell sx={{ p: 0 }}>
                                         <IconButton onClick={handleClick} sx={{ p: 0 }}>
                                           <MoreVert />
                                         </IconButton>
@@ -156,6 +170,7 @@ export const RankingTable = () => {
                                       <TableCell>{DrinkMapping[drink.type]}</TableCell>
                                       <TableCell align="right">{drink.amount_ml}ml</TableCell>
                                       <TableCell align="right">{drink.percentage}%</TableCell>
+                                      <TableCell align="right">{dateFormatter.format(new Date(drink.created_at))}</TableCell>
                                     </TableRow>
                                   ))}
                                 </TableBody>
