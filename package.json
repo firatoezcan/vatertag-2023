@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^3.1.0",
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
+    "@sentry/nextjs": "^7.52.1",
     "@supabase/auth-helpers-nextjs": "^0.6.1",
     "@supabase/auth-helpers-react": "^0.3.1",
     "@supabase/auth-ui-react": "^0.4.2",
