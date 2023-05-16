@@ -35,7 +35,7 @@ const calculateTotalAlcohol = (drinks: Drinks, weight: number) =>
   }, 0);
 
 const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
-  const WIDMARK_CONSTANT_MALE = 0.65;
+  const WIDMARK_CONSTANT_MALE = 0.7;
 
   return (calculateTotalAlcohol(drinks, weight) / (weight * WIDMARK_CONSTANT_MALE)).toFixed(3);
 };
