@@ -41,49 +41,41 @@ const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
   }, 0);
 };
 
-const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
+const calculcatwBloodAlcohol = (drinks: any, weight: any) => {
 
-  const r = 0.7; // for men
+  const alcoholDensity = 0.789; // g/mL
 
-  const bodyWeightGrams = weight * 1000; // converting weight to grams
+  const metabolizationRate = 0.15; // g/kg/h
 
-  const metabolizationRate = 0.15; // grams per hour
+  // Sort the drinks by the timestamp
 
-  // Sort the drinks by timestamp
+  drinks.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-  const sortedDrinks = drinks.sort((a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf());
+  // Calculate time passed since the first drink was consumed
 
-  // Calculate the total alcohol in grams in all drinks
+  const timePassed = (Date.now() - new Date(drinks[0].created_at)) / (1000 * 60 * 60); // hours
 
-  const totalAlcoholGrams = sortedDrinks.reduce((total, drink) => {
+  let bac = 0;
 
-    const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
+  for (let i = 0; i < drinks.length; i++) {
 
-    const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
+    // Convert alcohol volume to weight
 
-    return total + alcoholInGrams;
+    const alcoholGrams = drinks[i].amount_ml * (drinks[i].percentage / 100) * alcoholDensity;
 
-  }, 0);
+    // Add alcohol to the bloodstream
 
-  // Calculate the time difference in hours between the first drink's timestamp and the current timestamp
+    bac += alcoholGrams / weight;
 
-  const firstDrinkTimestamp = new Date(sortedDrinks[0].created_at).valueOf();
+  }
 
-  const timeDiffHours = (Date.now() - firstDrinkTimestamp) / (1000 * 60 * 60);
+  // Metabolize alcohol over time
 
-  // Calculate the alcohol metabolized
+  bac = Math.max(bac - metabolizationRate * timePassed, 0);
 
-  const metabolizedAlcohol = timeDiffHours * metabolizationRate;
+  // Return BAC in ‰
 
-  // Subtract the metabolized alcohol from the total alcohol
-
-  const remainingAlcohol = totalAlcoholGrams - metabolizedAlcohol;
-
-  // Calculate blood alcohol content (BAC) using the Widmark formula
-
-  const bac = remainingAlcohol > 0 ? (remainingAlcohol / (bodyWeightGrams * r)) : 0;
-
-  return bac * 10;
+  return bac * 1000;
 
 };
 
