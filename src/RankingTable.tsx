@@ -39,7 +39,7 @@ const calculateTotalAlcohol = (drinks: Drinks, weight: number) =>
 const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
   const WIDMARK_CONSTANT_MALE = 0.7;
 
-  return (calculateTotalAlcohol(drinks, weight) / (weight * WIDMARK_CONSTANT_MALE)).toFixed(3);
+  return calculateTotalAlcohol(drinks, weight) / (weight * WIDMARK_CONSTANT_MALE);
 };
 
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric", second: "numeric" });
@@ -137,8 +137,8 @@ export const RankingTable = () => {
               {drinksByUser
                 .sort(
                   (a, b) =>
-                    calculateTotalAlcohol(b.drinks, users.find((u) => u.user_id === b.userId).weight) -
-                    calculateTotalAlcohol(a.drinks, users.find((u) => u.user_id === a.userId).weight)
+                    calculcateBloodAlcohol(b.drinks, users.find((u) => u.user_id === b.userId).weight) -
+                    calculcateBloodAlcohol(a.drinks, users.find((u) => u.user_id === a.userId).weight)
                 )
                 .map(({ userId, drinks: userDrinks, ...stats }) => (
                   <>
@@ -152,7 +152,7 @@ export const RankingTable = () => {
                         {users.find((u) => u.user_id === userId)?.name ?? "Nicht registriert (geil ey)"}
                       </TableCell>
                       <TableCell>{calculateTotalAlcohol(userDrinks, users.find((u) => u.user_id === userId).weight).toFixed(2)}g</TableCell>
-                      <TableCell>{calculcateBloodAlcohol(userDrinks, users.find((u) => u.user_id === userId).weight)}‰</TableCell>
+                      <TableCell>{calculcateBloodAlcohol(userDrinks, users.find((u) => u.user_id === userId).weight).toFixed(3)}‰</TableCell>
                     </TableRow>
                     <TableRow sx={{ border: 0 }}>
                       <TableCell colSpan={8} sx={{ py: 0 }}>
