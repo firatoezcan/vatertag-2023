@@ -21,20 +21,25 @@ type Drinks = {
   created_at: string;
 }[];
 
-const calculateTotalAlcohol = (drinks: Drinks, weight: number) =>
-  drinks.reduce((total, drink) => {
+const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
+  // Sort the drinks by timestamp, so the first drink will be at the start of the array
+  const sortedDrinks = drinks.sort((a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf());
+  const firstDrinkTimestamp = new Date(sortedDrinks[0].created_at).valueOf();
+
+  return sortedDrinks.reduce((total, drink) => {
     const metabolizationRate = 7; // grams per hour
     const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
     const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
-    const drinkTimestamp = new Date(drink.created_at).valueOf();
-    // Calculate the time difference in hours between the current timestamp and the drink timestamp
-    const timeDiffHours = (Date.now() - drinkTimestamp) / (1000 * 60 * 60);
+
+    // Calculate the time difference in hours between the first drink's timestamp and the current timestamp
+    const timeDiffHours = (Date.now() - firstDrinkTimestamp) / (1000 * 60 * 60);
 
     let metabolizedAlcohol = timeDiffHours * metabolizationRate;
     let remainingAlcohol = alcoholInGrams - metabolizedAlcohol;
 
     return total + (remainingAlcohol > 0 ? remainingAlcohol : 0);
   }, 0);
+};
 
 const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
   const WIDMARK_CONSTANT_MALE = 0.7;
