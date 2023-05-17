@@ -41,7 +41,7 @@ const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
   }, 0);
 };
 
-const calculateBloodAlcohol = (drinks: Drinks, weight: number) => {
+const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
 
   // Sort the drinks by timestamp, so the first drink will be at the start of the array
 
