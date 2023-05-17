@@ -41,7 +41,7 @@ const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
   }, 0);
 };
 
-const calculcatwBloodAlcohol = (drinks: any, weight: any) => {
+const calculcateBloodAlcohol = (drinks: any, weight: any) => {
 
   const alcoholDensity = 0.789; // g/mL
 
