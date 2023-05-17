@@ -37,11 +37,11 @@ const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
     let metabolizedAlcohol = timeDiffHours * metabolizationRate;
     let remainingAlcohol = alcoholInGrams - metabolizedAlcohol;
 
-    return total + (remainingAlcohol > 0 ? remainingAlcohol : 0);
+    return total + (alcoholInGrams > 0 ? alcoholInGrams : 0);
   }, 0);
 };
 
-const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
+const calculateBloodAlcohol = (drinks: Drinks, weight: number) => {
 
   // Sort the drinks by timestamp, so the first drink will be at the start of the array
 
