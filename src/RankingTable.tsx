@@ -75,7 +75,7 @@ const calculcatwBloodAlcohol = (drinks: any, weight: any) => {
 
   // Return BAC in ‰
 
-  return bac * 1000 *100;
+  return bac * 100000;
 
 };
 
