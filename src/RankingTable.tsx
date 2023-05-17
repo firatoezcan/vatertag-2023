@@ -53,7 +53,7 @@ const calculcatwBloodAlcohol = (drinks: any, weight: any) => {
 
   // Calculate time passed since the first drink was consumed
 
-  const timePassed = (Date.now() - new Date(drinks[0].created_at)) / (1000 * 60 * 60); // hours
+  const timePassed = (Date.now() - new Date(drinks[0].created_at)).valueOf() / (1000 * 60 * 60); // hours
 
   let bac = 0;
 
