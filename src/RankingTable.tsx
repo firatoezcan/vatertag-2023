@@ -49,7 +49,7 @@ const calculcatwBloodAlcohol = (drinks: any, weight: any) => {
 
   // Sort the drinks by the timestamp
 
-  drinks.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  drinks.sort((a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf());
 
   // Calculate time passed since the first drink was consumed
 
