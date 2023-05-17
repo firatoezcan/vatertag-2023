@@ -83,7 +83,7 @@ const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
 
   const bac = remainingAlcohol > 0 ? (remainingAlcohol / (bodyWeightGrams * r)) : 0;
 
-  return bac;
+  return bac * 10;
 
 };
 
