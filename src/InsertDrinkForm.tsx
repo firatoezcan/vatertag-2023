@@ -68,6 +68,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
 
   const handleSubmit = async (values: InsertDrinkValues) => {
     if (isLoading) return;
+    if(values.name && values.weight) {
     if (userInfo) {
       await mutateAsync((s) =>
         s
@@ -86,6 +87,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
           weight: parseInt(values.weight),
         })
       );
+    }
     }
 
     await mutateAsync((supabase) =>
