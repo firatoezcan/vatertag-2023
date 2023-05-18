@@ -97,7 +97,7 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
     await mutateAsync((supabase) =>
       supabase.from("drink").insert({
         amount_ml: parseInt(values.customAmount || values.amount_ml),
-        percentage: values.alcoholAmount ? (parseInt(values.percentage) / 100) * parseInt(values.alcoholAmount) : parseInt(values.percentage),
+        percentage: values.alcoholAmount ? (parseFloat(values.percentage) / 100) * parseFloat(values.alcoholAmount) : parseFloat(values.percentage),
         type: values.type,
         user_id: user.id,
       })
