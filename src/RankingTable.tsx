@@ -223,7 +223,7 @@ export const RankingTable = () => {
 
                                       <TableCell>{DrinkMapping[drink.type]}</TableCell>
                                       <TableCell align="right">{drink.amount_ml}ml</TableCell>
-                                      <TableCell align="right">{drink.percentage}%</TableCell>
+                                      <TableCell align="right">{drink.percentage.toFixed(1)}%</TableCell>
                                       <TableCell align="right">{dateFormatter.format(new Date(drink.created_at))}</TableCell>
                                     </TableRow>
                                   ))}
