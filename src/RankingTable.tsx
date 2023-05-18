@@ -238,11 +238,11 @@ export const RankingTable = () => {
                 ))}
             </TableBody>
           </Table>
-          <Box display="flex" justifyContent="flex-end" px={1} py={2}>
+         { user && <Box display="flex" justifyContent="flex-end" px={1} py={2}>
             <Button variant="contained" onClick={() => setShowInsertDrinkForm(!showInsertDrinkForm)} color={showInsertDrinkForm ? "error" : "primary"}>
               {showInsertDrinkForm ? "Doch nicht eintragen" : "Drink eintragen"}
             </Button>
-          </Box>
+          </Box>}
         </TableContainer>
       )}
       {showInsertDrinkForm && <InsertDrinkForm onClose={() => setShowInsertDrinkForm(false)} />}
