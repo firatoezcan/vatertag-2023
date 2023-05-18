@@ -144,7 +144,7 @@ export const RankingTable = () => {
       {hasDrinks && (
         <TableContainer component={Paper}>
           <Typography variant="h6" sx={{ p: 1 }}>
-            Besoffski Rangliste
+            Besoffski Rangliste (Pegel kann falsch sein, aber es ist bei jedem gleich falsch also fuckit)
           </Typography>
           <Divider />
           <Table sx={{ maxWidth: 444 }}>
