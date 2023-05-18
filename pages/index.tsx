@@ -13,21 +13,19 @@ export default function Profile() {
   const client = useSupabaseClient();
   const router = useRouter();
   const [hasCheckedUser, setHasCheckedUser] = useState(false);
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await client.auth.getUser();
-      if (!user) {
-        router.push("/login");
-      } else {
-        setHasCheckedUser(true);
-      }
-    };
-    checkUser();
-  }, [client]);
+ 
+    
 
-  if (!hasCheckedUser) return null;
+
+
+      
+
+
+
+
+
+
+  
   return (
     <Container maxWidth="xs" sx={{ py: 8, display: "flex", justifyContent: "center" }}>
       <RankingTable />
