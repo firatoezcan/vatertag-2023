@@ -24,6 +24,7 @@ const InsertDrinkSchema = z.object({
   name: z.string().min(1, "Ok Mr.IchSagDirMeinenNamenNicht"),
   weight: z.string().min(2, "??????????????"),
   type: z.enum(drinkTypes, { errorMap: () => ({ message: "Wähl dein scheiß Getränk aus du Honk" }) }),
+  alcoholAmount: z.string().min(2, "Brauchen wa"),
   amount_ml: z.string().min(1, "Nichts trinken ist gut aber hilft dir hier nichts"),
   percentage: z.string().min(1, "Wasser"),
   customAmount: z.string().optional(),
@@ -58,8 +59,11 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
       ? {
           name: userInfo.name,
           weight: String(userInfo.weight),
+          alcoholAmount: "100",
         }
-      : {},
+      : {
+          alcoholAmount: "100",
+        },
   });
   const queryClient = useQueryClient();
   const userDrinks = useUserDrinks();
@@ -68,32 +72,32 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
 
   const handleSubmit = async (values: InsertDrinkValues) => {
     if (isLoading) return;
-    if(values.name && values.weight) {
-    if (userInfo) {
-      await mutateAsync((s) =>
-        s
-          .from("user")
-          .update({
+    if (values.name && values.weight) {
+      if (userInfo) {
+        await mutateAsync((s) =>
+          s
+            .from("user")
+            .update({
+              name: values.name,
+              weight: parseInt(values.weight),
+            })
+            .eq("user_id", user.id)
+        );
+      } else {
+        await mutateAsync((s) =>
+          s.from("user").insert({
             name: values.name,
+            user_id: user.id,
             weight: parseInt(values.weight),
           })
-          .eq("user_id", user.id)
-      );
-    } else {
-      await mutateAsync((s) =>
-        s.from("user").insert({
-          name: values.name,
-          user_id: user.id,
-          weight: parseInt(values.weight),
-        })
-      );
-    }
+        );
+      }
     }
 
     await mutateAsync((supabase) =>
       supabase.from("drink").insert({
-        amount_ml: parseInt(values.customAmount ?? values.amount_ml),
-        percentage: parseInt(values.percentage),
+        amount_ml: parseInt(values.customAmount || values.amount_ml),
+        percentage: values.alcoholAmount ? (parseInt(values.percentage) / 100) * parseInt(values.alcoholAmount) : parseInt(values.percentage),
         type: values.type,
         user_id: user.id,
       })
@@ -103,7 +107,17 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
   };
 
   const amount = formMethods.watch("amount_ml");
+  const type = formMethods.watch("type");
+  const alcoholAmount = formMethods.watch("alcoholAmount");
 
+  if (type !== "mixed" && !alcoholAmount) {
+    formMethods.setValue("alcoholAmount", "100");
+  }
+  if (type === "mixed" && alcoholAmount === "100") {
+    formMethods.setValue("alcoholAmount", "30");
+  }
+
+  console.log(formMethods.getValues());
   return (
     <FormProvider {...formMethods}>
       <Box component="form" onSubmit={formMethods.handleSubmit(handleSubmit)} sx={{ maxWidth: 420, width: "100%" }}>
@@ -151,8 +165,18 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
                   ]}
                   disabled={isLoading}
                 />
+                {type === "mixed" && (
+                  <HookFormTextField label="Verhältnis vom Alkohol" helperText="Bei 80:20 gibst du hier 20 ein" name="alcoholAmount" type="number" disabled={isLoading} />
+                )}
                 {amount === "0" && <HookFormTextField label="Menge in Milliliter die du getrunken hast" name="customAmount" type="number" disabled={isLoading} />}
-                <HookFormTextField label="Prozent" name="percentage" type="number" disabled={isLoading} inputProps={{ step: ".1", max: "100", min: "1" }} />
+                <HookFormTextField
+                  label="Prozent"
+                  helperText="Bei ner Vodkamische steht hier 40. Ouzo hat 36"
+                  name="percentage"
+                  type="number"
+                  disabled={isLoading}
+                  inputProps={{ step: ".1", max: "100", min: "1" }}
+                />
                 {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
               </Stack>
             </Stack>
