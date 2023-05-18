@@ -117,7 +117,6 @@ export const InsertDrinkForm = (props: InsertDrinkFormProps) => {
     formMethods.setValue("alcoholAmount", "30");
   }
 
-  console.log(formMethods.getValues());
   return (
     <FormProvider {...formMethods}>
       <Box component="form" onSubmit={formMethods.handleSubmit(handleSubmit)} sx={{ maxWidth: 420, width: "100%" }}>
