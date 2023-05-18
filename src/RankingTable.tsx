@@ -22,61 +22,47 @@ type Drinks = {
 }[];
 
 const calculateTotalAlcohol = (drinks: Drinks, weight: number) => {
-  // Sort the drinks by timestamp, so the first drink will be at the start of the array
-  const sortedDrinks = drinks.sort((a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf());
-  const firstDrinkTimestamp = new Date(sortedDrinks[0].created_at).valueOf();
+  const metabolizationRate = 7; // grams per hour
+  const totalAlcohol = drinks.reduce(
+    (total, drink) => {
+      const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
+      const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
+      const drinkTimestamp = new Date(drink.created_at).valueOf();
+      if (total.timeStampPrevious === 0) {
+        return {
+          grams: alcoholInGrams,
+          timeStampPrevious: drinkTimestamp,
+        };
+      }
+      let previousGrams = total.grams;
+      // Calculate the time difference in hours between the current timestamp and the drink timestamp
+      const timeDiffHoursBetweenTwoDrinks = (drinkTimestamp - total.timeStampPrevious) / (1000 * 60 * 60);
 
-  return sortedDrinks.reduce((total, drink) => {
-    const metabolizationRate = 7; // grams per hour
-    const alcoholInMilliliters = (drink.amount_ml * drink.percentage) / 100;
-    const alcoholInGrams = alcoholInMilliliters * 0.789; // Assuming the density of alcohol is 0.789 g/mL
+      let metabolizedAlcohol = timeDiffHoursBetweenTwoDrinks * metabolizationRate;
+      previousGrams = Math.max(previousGrams - metabolizedAlcohol, 0);
+      return {
+        grams: previousGrams + alcoholInGrams,
+        timeStampPrevious: drinkTimestamp,
+      };
+    },
+    {
+      grams: 0,
+      timeStampPrevious: 0,
+    }
+  );
+  let lastDrinkGrams = totalAlcohol.grams;
+  // Calculate the time difference in hours between the current timestamp and the drink timestamp
+  const timeDiffHoursBetweenLastDrink = (Date.now() - totalAlcohol.timeStampPrevious) / (1000 * 60 * 60);
 
-    // Calculate the time difference in hours between the first drink's timestamp and the current timestamp
-    const timeDiffHours = (Date.now() - firstDrinkTimestamp) / (1000 * 60 * 60);
-
-    let metabolizedAlcohol = timeDiffHours * metabolizationRate;
-    let remainingAlcohol = alcoholInGrams - metabolizedAlcohol;
-
-    return total + (alcoholInGrams > 0 ? alcoholInGrams : 0);
-  }, 0);
+  let metabolizedAlcohol = timeDiffHoursBetweenLastDrink * metabolizationRate;
+  lastDrinkGrams = Math.max(lastDrinkGrams - metabolizedAlcohol, 0);
+  return lastDrinkGrams;
 };
 
-const calculcateBloodAlcohol = (drinks: any, weight: any) => {
+const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
+  const WIDMARK_CONSTANT_MALE = 0.7;
 
-  const alcoholDensity = 0.789; // g/mL
-
-  const metabolizationRate = 0.15; // g/kg/h
-
-  // Sort the drinks by the timestamp
-
-  drinks.sort((a, b) => new Date(a.created_at).valueOf() - new Date(b.created_at).valueOf());
-
-  // Calculate time passed since the first drink was consumed
-
-  const timePassed = (Date.now() - new Date(drinks[0].created_at).valueOf()) / (1000 * 60 * 60); // hours
-
-  let bac = 0;
-
-  for (let i = 0; i < drinks.length; i++) {
-
-    // Convert alcohol volume to weight
-
-    const alcoholGrams = drinks[i].amount_ml * (drinks[i].percentage / 100) * alcoholDensity;
-
-    // Add alcohol to the bloodstream
-
-    bac += alcoholGrams / weight;
-
-  }
-
-  // Metabolize alcohol over time
-
-  bac = Math.max(bac - metabolizationRate * timePassed, 0);
-
-  // Return BAC in ‰
-
-  return bac ;
-
+  return calculateTotalAlcohol(drinks, weight) / (weight * WIDMARK_CONSTANT_MALE);
 };
 
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric", second: "numeric" });
