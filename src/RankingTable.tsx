@@ -68,8 +68,8 @@ const calculcateBloodAlcohol = (drinks: Drinks, weight: number) => {
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { year: "2-digit", month: "2-digit", day: "2-digit", hour: "numeric", minute: "numeric", second: "numeric" });
 
 export const RankingTable = () => {
-  const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
-  const { data: users, isLoading: isLoadingUsers } = useSupabaseQuery((supabase) => supabase.from("user").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
+  const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 2000, refetchOnWindowFocus: true });
+  const { data: users, isLoading: isLoadingUsers } = useSupabaseQuery((supabase) => supabase.from("user").select("*"), { refetchInterval: 2000, refetchOnWindowFocus: true });
   const [showInsertDrinkForm, setShowInsertDrinkForm] = useState(false);
   const [visibleDetails, setVisibleDetails] = useState<string | undefined>(undefined);
 

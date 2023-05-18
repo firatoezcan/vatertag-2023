@@ -37,7 +37,7 @@ type InsertDrinkFormProps = {
 };
 
 const useUserDrinks = () => {
-  const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 10000, refetchOnWindowFocus: true });
+  const { data: drinks, isLoading } = useSupabaseQuery((supabase) => supabase.from("drink").select("*"), { refetchInterval: 2000, refetchOnWindowFocus: true });
   const user = useUser();
 
   if (isLoading) return null;
