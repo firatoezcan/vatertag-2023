@@ -74,7 +74,7 @@ export const RankingTable = () => {
   const [visibleDetails, setVisibleDetails] = useState<string | undefined>(undefined);
 
   const queryClient = useQueryClient();
-  const user = useUser();
+  const user = useUser() || {};
 
   const [renderCount, setRenderCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
